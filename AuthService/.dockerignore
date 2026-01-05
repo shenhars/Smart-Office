@@ -1,0 +1,19 @@
+# Ignore build and output folders
+bin/
+obj/
+out/
+
+# Ignore IDE-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.dotSettings.user
+
+# Ignore Docker files
+Dockerfile
+.dockerignore
+
+# Ignore Git
+.git/
+.gitignore

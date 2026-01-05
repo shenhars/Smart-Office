@@ -1,0 +1,13 @@
+# .gitignore for ResourceService (.NET)
+# Ignore build outputs and IDE files
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local appsettings and secrets
+appsettings.*.local
+secrets.json

@@ -1,0 +1,19 @@
+# .gitignore for frontend-client (Node)
+# Node modules and build outputs
+node_modules/
+dist/
+build/
+
+# Vite / cache
+.vite/
+.cache/
+
+# Environment and logs
+.env
+.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.vscode/

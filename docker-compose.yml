@@ -1,0 +1,52 @@
+services:
+  # 1. SQL Database for Auth
+  auth-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: smart_office_auth
+    healthcheck: # Ensures DB is ready before API starts
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. NoSQL Database for Resources
+  resource-db:
+    image: mongo:latest
+
+  # 3. Identity & Auth Service
+  auth-service:
+    build: ./AuthService
+    platform: linux/amd64
+    depends_on:
+      auth-db:
+        condition: service_healthy # Wait for healthcheck to pass
+    environment:
+      # FIXED: Matches POSTGRES_USER
+      ConnectionStrings__DefaultConnection: "Host=auth-db;Database=smart_office_auth;Username=postgres;Password=password"
+      Jwt__Key: "Your_Super_Secret_Key_At_Least_32_Chars!"
+      Jwt__Issuer: "SmartOfficeAuth"
+      Jwt__Audience: "SmartOfficeResources"
+    ports:
+      - "5000:8080"
+
+  # 4. Resource Management Service
+  resource-service:
+    build: ./ResourceService
+    depends_on:
+      - resource-db
+    environment:
+      ConnectionStrings__MongoConnection: "mongodb://resource-db:27017"
+      Jwt__Key: "Your_Super_Secret_Key_At_Least_32_Chars!"
+      Jwt__Issuer: "SmartOfficeAuth"
+      Jwt__Audience: "SmartOfficeResources"
+    ports:
+      - "5002:8080"
+
+  # 5. Frontend Client
+  frontend:
+    build: ./frontend-client
+    ports:
+      - "3000:80"
