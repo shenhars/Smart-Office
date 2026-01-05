@@ -5,7 +5,6 @@ This repository contains a complete microservice stack prepared for the Full-Sta
 Run Guide (Development)
 1. Prerequisites
 	- Docker & Docker Compose
-	- .NET 9 SDK (to run tests or create EF migrations locally)
 	- Node 18+ and npm (optional for local frontend development)
 
 2. Start the full stack (build images and run containers)
@@ -31,8 +30,6 @@ Reflections (short)
 - Used Postgres for AuthService and MongoDB for ResourceService to demonstrate DB isolation.
 - Added validation (data annotations) on DTOs and models and `ModelState` validation in controllers.
 - Encapsulated resource business rules in `ResourceService.Services.AssetService` (SOLID: single responsibility, DI).
-- Fixed SPA routing in nginx and ensured CORS is configured for the frontend origin.
-- For development convenience, `AuthService/program.cs` contains a best-effort schema setup; for production, create EF Core migrations and apply them instead.
 
 Tooling Disclosure
 - AI assistance: Code-refactor and editing assistance was used: gemini pro and copilot.
