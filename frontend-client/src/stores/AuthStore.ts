@@ -22,7 +22,7 @@ function parseJwt(token: string | null): any | null {
 
 class AuthStore {
   token: string | null = localStorage.getItem('token');
-  isAuthenticated: boolean = !!localStorage.getItem('token'); // THIS LINE FIXES TS2339
+  isAuthenticated: boolean = !!localStorage.getItem('token');
 
   get userRole(): string | null {
     const payload = parseJwt(this.token);
@@ -53,9 +53,35 @@ class AuthStore {
         // that read from localStorage will see the token immediately.
         localStorage.setItem('token', data.token);
         this.isAuthenticated = true;
+        return { success: true };
+      } else {
+        // Try to extract a helpful message from the response body
+        let msg = 'Login failed';
+        try {
+          const err = await response.json();
+          if (err && typeof err === 'object') {
+            if (err.message) msg = err.message;
+            else if (err.errors) {
+              // err.errors may be an array of { code, description } or strings
+              if (Array.isArray(err.errors)) {
+                const mapped = err.errors.map((e: any) => {
+                  if (typeof e === 'string') return { code: null, description: e };
+                  return { code: e.code || null, description: e.description || JSON.stringify(e) };
+                });
+                msg = mapped.map((m: any) => m.description).join('; ');
+                return { success: false, message: msg, errors: mapped };
+              } else {
+                msg = JSON.stringify(err.errors);
+              }
+            } else msg = JSON.stringify(err);
+          }
+        } catch {}
+        console.error("Login failed", msg);
+        return { success: false, message: 'The email or the password is incorrect.' };
       }
     } catch (error) {
       console.error("Login failed", error);
+      return { success: false, message: 'The email or the password is incorrect.' };
     }
   }
 
@@ -74,16 +100,33 @@ class AuthStore {
       });
 
       if (response.ok) {
-        alert("Registration successful! Please login.");
-        return true;
+        return { success: true };
       } else {
-        const errorData = await response.json();
-        console.error("Registration failed", errorData);
-        return false;
+        let msg = 'Registration failed';
+        try {
+          const err = await response.json();
+          if (err && typeof err === 'object') {
+            if (err.message) msg = err.message;
+            else if (err.errors) {
+              if (Array.isArray(err.errors)) {
+                const mapped = err.errors.map((e: any) => {
+                  if (typeof e === 'string') return { code: null, description: e };
+                  return { code: e.code || null, description: e.description || JSON.stringify(e) };
+                });
+                msg = mapped.map((m: any) => m.description).join('; ');
+                return { success: false, message: msg, errors: mapped };
+              } else {
+                msg = JSON.stringify(err.errors);
+              }
+            } else msg = JSON.stringify(err);
+          }
+        } catch {}
+        console.error("Registration failed", msg);
+        return { success: false, message: msg };
       }
     } catch (error) {
       console.error("Connection error", error);
-      return false;
+      return { success: false, message: 'Connection error' };
     }
   }
 }
