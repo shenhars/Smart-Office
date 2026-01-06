@@ -1,36 +1,44 @@
 # Smart Office Asset Manager
 
-This repository contains a complete microservice stack prepared for the Full-Stack assignment.
+This project is a full-stack microservices ecosystem that implements a "Smart Office" management system that let you display and manage assests according to roles ("Admin", "Member"). 
+It's architecture is composed of PostgreSQL-backed Auth Service that handles secure identity via JWT and a MongoDB-backed Resource Service that manages office assets through protected NoSQL data structures all using .NET 9.
+The frontend is composed of TypeScript-based React dashboard with MobX state management and Material UI.
 
-Run Guide (Development)
-1. Prerequisites
-	- Docker & Docker Compose
-	- Node 18+ and npm (optional for local frontend development)
+Contents
+- `AuthService` - ASP.NET Core 9 API using Identity + PostgreSQL for user and auth data.
+- `ResourceService` - ASP.NET Core 9 API using MongoDB to store assets.
+- `frontend-client` - React + Vite front-end (MobX + MUI) communicating with the APIs.
 
-2. Start the full stack (build images and run containers)
+Quick start (from Git)
+
+1. Clone the repo:
 
 ```powershell
-docker compose up --build
-# or detach
+git clone https://github.com/shenhars/Smart-Office.git
+cd Smart-Office
+```
+
+2. Run the full stack with Docker Compose (build images then start):
+
+```powershell
 docker compose up --build -d
 ```
 
-3. Ports
-	- Frontend (nginx): http://localhost:3000
-	- AuthService: http://localhost:5000
-	- ResourceService: http://localhost:5002
+3. Open the frontend in the browser: http://localhost:3000
 
-4. Quick manual smoke test
-	- Open http://localhost:3000 and register a new user (choose role Admin or Member).
-	- Login and, if Admin, add an asset from the dashboard.
+Default service ports (compose mappings)
+- Frontend (nginx): http://localhost:3000
+- AuthService: container 8080 → host 5000 (check compose if changed)
+- ResourceService: container 8080 → host 5002 (check compose if changed)
 
+Notes and tips
+- To rebuild a single service: `docker compose build --no-cache <service-name>`.
+- To view logs: `docker compose logs -f <service-name>`.
+- To stop and remove containers: `docker compose down`.
 
-Reflections (short)
-- Implemented secure, role-based authentication using ASP.NET Core Identity and JWT tokens.
-- Used Postgres for AuthService and MongoDB for ResourceService to demonstrate DB isolation.
-- Added validation (data annotations) on DTOs and models and `ModelState` validation in controllers.
-- Encapsulated resource business rules in `ResourceService.Services.AssetService` (SOLID: single responsibility, DI).
+Environment & configuration
+- The services read config from their `appsettings.json` and environment variables. When running in Docker Compose the provided service definitions set required variables.
 
-Tooling Disclosure
-- AI assistance: Code-refactor and editing assistance was used: gemini pro and copilot.
-- Libraries: ASP.NET Core Identity, Entity Framework Core, Npgsql (Postgres), MongoDB.Driver, React, MobX, MUI.
+Quick manual test
+- Open the frontend and register a user (choose `Admin` or `Member`).
+- Login and exercise the dashboard; admins can add assets which are saved by `ResourceService`.
