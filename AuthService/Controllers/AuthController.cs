@@ -4,7 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AuthService.Models; // This links to the DTOs we just created
+using AuthService.Models;
+using AuthService.BusinessLogic;
 
 namespace AuthService.Controllers
 {
@@ -59,36 +60,11 @@ namespace AuthService.Controllers
 
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                var token = GenerateJwtToken(user); // Issues token with claims
+                var token = AuthLogic.GenerateJwtToken(user, _config); // Issues token with claims
                 return Ok(new { token });
             }
 
             return Unauthorized();
-        }
-
-        private string GenerateJwtToken(ApplicationUser user)
-        {
-            var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id), 
-                new Claim(ClaimTypes.Role, user.Role)
-            };
-
-            // 1. Get the raw bytes
-            var keyBytes = Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "Your_Super_Secret_Key_At_Least_32_Chars");
-
-            // 2. Wrap them in a SymmetricSecurityKey object (The Fix for CS1503)
-            var authSigningKey = new SymmetricSecurityKey(keyBytes);
-
-            // 3. Use that key to create your credentials
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                expires: DateTime.Now.AddHours(3),
-                claims: claims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
